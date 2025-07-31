@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance System Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-700 p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a class="text-white text-lg font-semibold" href="#">Smart Desk</a>
+            <ul class="flex space-x-4">
+                <li><a class="text-white hover:text-blue-200" href="#">Sign out</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-4">
+        <div class="flex flex-col md:flex-row">
+            <!-- Sidebar -->
+            <nav class="w-full md:w-1/4 bg-white p-4 shadow-md mb-4 md:mb-0">
+                <div class="mb-4">
+                    <img src="./static/logo.png" alt="Logo" class="w-32 mx-auto">
+                </div>
+                <ul class="space-y-2">
+                    <li><a class="block p-2 text-blue-700 hover:bg-blue-100 rounded" href="/home">Home</a></li>
+                    <li><a class="block p-2 bg-blue-100 text-blue-700 font-medium rounded" href="/dashboard">Dashboard</a></li>
+                    <!-- <li><a class="block p-2 text-blue-700 hover:bg-blue-100 rounded" href="/staff_registration">Register Staff</a></li> -->
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="flex-1 md:ml-4">
+                <div class="bg-white p-6 rounded shadow mb-4">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4">
+                        <h1 class="text-2xl font-semibold text-gray-700 mb-2 md:mb-0">Analytics Dashboard</h1>
+                        <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full md:w-auto">
+                            <div class="flex space-x-2">
+                                <button onclick="exportToPDF()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center">
+                                    <i class="bi bi-file-earmark-pdf mr-2"></i> Export PDF
+                                </button>
+                                <button onclick="exportToExcel()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center">
+                                    <i class="bi bi-file-earmark-excel mr-2"></i> Export Excel
+                                </button>
+                            </div>
+                            <div class="flex space-x-2">
+                                <select id="timePeriod" onchange="updateCharts()" class="p-2 border border-gray-300 rounded">
+                                    <option value="weekly">Weekly Report</option>
+                                    <option value="monthly" selected>Monthly Report</option>
+                                </select>
+                                <select id="monthSelect" onchange="updateCharts()" class="p-2 border border-gray-300 rounded">
+                                    <option value="">All Months</option>
+                                    <option value="0">January</option>
+                                    <option value="1">February</option>
+                                    <option value="2">March</option>
+                                    <option value="3">April</option>
+                                    <option value="4">May</option>
+                                    <option value="5">June</option>
+                                    <option value="6">July</option>
+                                    <option value="7">August</option>
+                                    <option value="8">September</option>
+                                    <option value="9">October</option>
+                                    <option value="10">November</option>
+                                    <option value="11">December</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-sm text-blue-600">Total Staff</p>
+                                    <h3 class="text-2xl font-bold text-blue-800" id="totalStaff">24</h3>
+                                </div>
+                                <i class="bi bi-people-fill text-blue-500 text-2xl"></i>
+                            </div>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-sm text-green-600">Avg. Hours This Month</p>
+                                    <h3 class="text-2xl font-bold text-green-800" id="avgHours">156</h3>
+                                </div>
+                                <i class="bi bi-clock-fill text-green-500 text-2xl"></i>
+                            </div>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-sm text-purple-600">Attendance Rate</p>
+                                    <h3 class="text-2xl font-bold text-purple-800" id="attendanceRate">92%</h3>
+                                </div>
+                                <i class="bi bi-check-circle-fill text-purple-500 text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Hours Chart -->
+                        <div class="bg-white p-4 rounded-lg border border-gray-200">
+                            <h3 class="text-lg font-semibold mb-4">Monthly Hours Distribution</h3>
+                            <canvas id="hoursChart" height="250"></canvas>
+                        </div>
+                        <!-- Attendance Trend -->
+                        <div class="bg-white p-4 rounded-lg border border-gray-200">
+                            <h3 class="text-lg font-semibold mb-4">Attendance Trend</h3>
+                            <canvas id="attendanceChart" height="250"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Data Table -->
+                    <div class="mt-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Staff Attendance Details</h3>
+                            <div class="relative">
+                                <input id="staffSearch" class="pl-8 pr-4 py-2 border border-gray-300 rounded-lg w-full md:w-64" 
+                                       type="text" placeholder="Search staff..." onkeyup="searchStaff()">
+                                <i class="bi bi-search absolute left-3 top-3 text-gray-400"></i>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                                <thead class="bg-blue-600 text-white">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left">Staff Name</th>
+                                        <th class="px-6 py-3 text-left">Directorate</th>
+                                        <th class="px-6 py-3 text-center">Total Hours</th>
+                                        <th class="px-6 py-3 text-center">Weekly Avg.</th>
+                                        <th class="px-6 py-3 text-center">Monthly Avg.</th>
+                                        <th class="px-6 py-3 text-center">Attendance %</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="staffTableBody" class="divide-y divide-gray-200">
+                                    <!-- Sample data row - will be populated by JavaScript -->
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4">John Doe</td>
+                                        <td class="px-6 py-4">Engineering</td>
+                                        <td class="px-6 py-4 text-center">160</td>
+                                        <td class="px-6 py-4 text-center">40</td>
+                                        <td class="px-6 py-4 text-center">160</td>
+                                        <td class="px-6 py-4 text-center">100%</td>
+                                    </tr>
+                                    <!-- More rows will be added dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="flex justify-between items-center mt-4">
+                            <div class="text-sm text-gray-600">
+                                Showing <span id="showingFrom">1</span> to <span id="showingTo">10</span> of <span id="totalRecords">24</span> entries
+                            </div>
+                            <div class="flex space-x-1">
+                                <button class="px-3 py-1 border rounded disabled:opacity-50" id="prevPage" disabled>Previous</button>
+                                <button class="px-3 py-1 border rounded bg-blue-600 text-white">1</button>
+                                <button class="px-3 py-1 border rounded hover:bg-gray-100">2</button>
+                                <button class="px-3 py-1 border rounded hover:bg-gray-100">3</button>
+                                <button class="px-3 py-1 border rounded" id="nextPage">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            loadStaffData();
+        });
+
+        // Chart initialization
+        function initCharts() {
+            // Hours Chart
+            const hoursCtx = document.getElementById('hoursChart').getContext('2d');
+            window.hoursChart = new Chart(hoursCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Hours Worked',
+                        data: [120, 140, 160, 180],
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: true }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Attendance Trend Chart
+            const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+            window.attendanceChart = new Chart(attendanceCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Attendance Rate',
+                        data: [85, 88, 90, 92, 91, 93],
+                        fill: false,
+                        backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 80,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load staff data (mock data for demonstration)
+        function loadStaffData() {
+            const staffData = [
+                { name: "John Doe", directorate: "Engineering", totalHours: 160, weeklyAvg: 40, monthlyAvg: 160, attendance: 100 },
+                { name: "Jane Smith", directorate: "Marketing", totalHours: 145, weeklyAvg: 36, monthlyAvg: 145, attendance: 91 },
+                { name: "Mike Johnson", directorate: "Sales", totalHours: 155, weeklyAvg: 39, monthlyAvg: 155, attendance: 97 },
+                { name: "Sarah Williams", directorate: "HR", totalHours: 150, weeklyAvg: 38, monthlyAvg: 150, attendance: 94 },
+                { name: "David Brown", directorate: "Engineering", totalHours: 165, weeklyAvg: 41, monthlyAvg: 165, attendance: 100 },
+                { name: "Emily Davis", directorate: "Marketing", totalHours: 140, weeklyAvg: 35, monthlyAvg: 140, attendance: 88 },
+                { name: "Robert Wilson", directorate: "Sales", totalHours: 158, weeklyAvg: 40, monthlyAvg: 158, attendance: 99 },
+                { name: "Lisa Miller", directorate: "HR", totalHours: 152, weeklyAvg: 38, monthlyAvg: 152, attendance: 95 },
+                { name: "James Taylor", directorate: "Engineering", totalHours: 162, weeklyAvg: 41, monthlyAvg: 162, attendance: 100 },
+                { name: "Jennifer Anderson", directorate: "Marketing", totalHours: 148, weeklyAvg: 37, monthlyAvg: 148, attendance: 93 }
+            ];
+
+            const tableBody = document.getElementById('staffTableBody');
+            tableBody.innerHTML = '';
+
+            staffData.forEach(staff => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4">${staff.name}</td>
+                    <td class="px-6 py-4">${staff.directorate}</td>
+                    <td class="px-6 py-4 text-center">${staff.totalHours}</td>
+                    <td class="px-6 py-4 text-center">${staff.weeklyAvg}</td>
+                    <td class="px-6 py-4 text-center">${staff.monthlyAvg}</td>
+                    <td class="px-6 py-4 text-center">${staff.attendance}%</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            document.getElementById('totalRecords').textContent = staffData.length;
+        }
+
+        // Update charts based on selected time period
+        function updateCharts() {
+            const timePeriod = document.getElementById('timePeriod').value;
+            const month = document.getElementById('monthSelect').value;
+
+            // In a real app, you would fetch new data from the server based on these filters
+            // For demo, we'll just update with random data
+            if (timePeriod === 'weekly') {
+                window.hoursChart.data.labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+                window.hoursChart.data.datasets[0].data = [8, 8, 7, 9, 8];
+                window.hoursChart.update();
+            } else {
+                window.hoursChart.data.labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+                window.hoursChart.data.datasets[0].data = [120, 140, 160, 180];
+                window.hoursChart.update();
+            }
+        }
+
+        // Search functionality
+        function searchStaff() {
+            const input = document.getElementById('staffSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('#staffTableBody tr');
+
+            rows.forEach(row => {
+                const name = row.cells[0].textContent.toLowerCase();
+                const dept = row.cells[1].textContent.toLowerCase();
+                if (name.includes(input) || dept.includes(input)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.text('Attendance System Report', 10, 10);
+            doc.text('Generated on: ' + new Date().toLocaleDateString(), 10, 20);
+            
+            // Add chart images (in a real app, you would export the actual charts)
+            doc.text('Monthly Hours Distribution', 10, 40);
+            doc.text('Attendance Trend', 110, 40);
+            
+            // Add table data
+            doc.text('Staff Attendance Data', 10, 80);
+            let y = 90;
+            document.querySelectorAll('#staffTableBody tr').forEach(row => {
+                if (row.style.display !== 'none') {
+                    const text = Array.from(row.cells).map(cell => cell.textContent).join(' | ');
+                    doc.text(text, 10, y);
+                    y += 10;
+                }
+            });
+            
+            doc.save('attendance_report.pdf');
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            const staffData = [];
+            document.querySelectorAll('#staffTableBody tr').forEach(row => {
+                if (row.style.display !== 'none') {
+                    staffData.push({
+                        name: row.cells[0].textContent,
+                        directorate: row.cells[1].textContent,
+                        totalHours: row.cells[2].textContent,
+                        weeklyAvg: row.cells[3].textContent,
+                        monthlyAvg: row.cells[4].textContent,
+                        attendance: row.cells[5].textContent
+                    });
+                }
+            });
+
+            const ws = XLSX.utils.json_to_sheet(staffData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Attendance Data");
+            XLSX.writeFile(wb, "attendance_report.xlsx");
+        }
+    </script>
+</body>
+</html>

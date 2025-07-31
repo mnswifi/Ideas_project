@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DSA ATTENDANCE SYSTEM</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-blue-600 to-gray-800">
+    
+    <div class="bg-white p-10 rounded-lg shadow-lg text-center w-96">
+        <div class="brand mb-4">
+            <div class="brand-logo">
+              <img src="static/logo.jpg" alt="Logo" class="w-24 h-24 mx-auto" />
+            </div>
+        </div>
+        <h2 class="text-2xl font-semibold mb-4">DSA Clock-In Scanner</h2>
+        <img id="video feed" src="{{ url_for('video_feed') }}" alt="video feed" class="w-48 h-48  mx-auto bg-gray-400" />
+        <div class="staff-details mt-5">
+            <p class="mb-2"><strong>Name:</strong> <span name="name">N/A</span></p>
+            <p class="mb-2"><strong>Staff ID:</strong> <span name="staff_id">N/A</span></p>
+            <p class="mb-2"><strong>Directorate</strong> <span name="directorate">N/A</span></p>
+            <p class="mb-2"><strong>Time</strong> <span name="time">N/A</span></p>
+            <p class="mb-2"><strong>Status</strong> <span name="status">N/A</span></p>
+         <!--  <p class="mb-2"><strong>RFID Code:</strong> <span id="staff-rfid">N/A</span></p>
+            <p class="mb-2"><strong>Time:</strong> <span id="clock-time">N/A</span></p>--> 
+        </div>
+    </div>
+
+    <script>
+        var socket = io.connect("http://127.0.0.1:8001");
+        socket.on('update_data', function(data) {
+            document.getElementById("name").innerHTML = "Name: " + data.full_name;
+            document.getElementById("staff_id").innerHTML = "Staff ID: " + data.staff_id;
+            document.getElementById("directorate").innerHTML = "Directorate: " + data.directorate;
+            document.getElementById("time").innerHTML = "Time: " + data.time;
+            document.getElementById("status").innerHTML = "Status: " + data.status;
+        });
+    </script>
+</body>
+</html>

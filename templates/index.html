@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DSA ATTENDANCE SYSTEM</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-blue-600 to-gray-800">
+    
+    <div class="bg-white p-10 rounded-lg shadow-lg text-center w-96">
+        <div class="brand mb-4">
+            <div class="brand-logo">
+              <img src="static/logo.jpg" alt="Logo" class="w-24 h-24 mx-auto" />
+            </div>
+        </div>
+        <h2 class="text-2xl font-semibold mb-4">SMART EYE</h2>
+        <img id="video feed" src="{{ url_for('video_feed') }}" alt="video feed" class="w-48 h-48  mx-auto bg-gray-400" />
+        <div class="staff-details mt-5">
+            <!-- <p class="mb-2"><strong>Name:</strong> <span id="name">N/A</span></p> -->
+            <p class="mb-2"><strong>Staff ID:</strong> <span id="staff_id">N/A</span></p>
+            <p class="mb-2"><strong>Directorate:</strong> <span id="directorate">N/A</span></p>
+            <p class="mb-2"><strong>Time:</strong> <span id="time">N/A</span></p>
+            <p class="mb-2"><strong>Status:</strong> <span id="status">N/A</span></p>
+         <!--  <p class="mb-2"><strong>RFID Code:</strong> <span id="staff-rfid">N/A</span></p>
+            <p class="mb-2"><strong>Time:</strong> <span id="clock-time">N/A</span></p>--> 
+        </div>
+    </div>
+
+    <script>
+        const socket = io.connect("http://127.0.0.1:8001");
+        let clearDataTimeout;
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+        socket.on('update_data', (data) =>{
+            console.log('Received data:', data);
+             // Clear existing information
+            //  document.getElementById("name").innerHTML = "N/A";
+            document.getElementById("staff_id").innerHTML = "N/A";
+            document.getElementById("directorate").innerHTML = "N/A";
+            document.getElementById("time").innerHTML = "N/A";
+            document.getElementById("status").innerHTML = "N/A";
+            
+            // Update with new data
+            // document.getElementById("name").innerHTML = data.full_name;
+            document.getElementById("staff_id").innerHTML = data.staff_id;
+            document.getElementById("directorate").innerHTML = data.directorate;
+            document.getElementById("time").innerHTML = data.time;
+            document.getElementById("status").innerHTML = data.status;
+
+            // Clear the previous timeout
+            clearTimeout(clearDataTimeout);
+
+            // Set a new timeout to clear the data after 3 seconds
+            clearDataTimeout = setTimeout(() => {
+                // document.getElementById("name").innerHTML = "N/A";
+                document.getElementById("staff_id").innerHTML = "N/A";
+                document.getElementById("directorate").innerHTML = "N/A";
+                document.getElementById("time").innerHTML = "N/A";
+                document.getElementById("status").innerHTML = "N/A";
+            }, 3000);
+        });
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+
+    </script>
+</body>
+</html>

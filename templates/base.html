@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DSA ATTENDANCE SYSTEM</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-blue-600 to-gray-800">
+    
+    <div class="bg-white p-10 rounded-lg shadow-lg text-center w-96">
+        <div class="brand mb-4">
+            <div class="brand-logo">
+              <img src="static/logo.jpg" alt="Logo" class="w-24 h-24 mx-auto" />
+            </div>
+        </div>
+        {% block content%}
+        {% endblock %}
+        
+    </div>
+</body>
+</html>
